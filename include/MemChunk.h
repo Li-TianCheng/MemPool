@@ -18,8 +18,9 @@ private:
     struct obj{
         obj* next;
     };
-    obj* freePointer;
+    obj* free;
     obj* start;
+    MemChunk* prev;
     MemChunk* next;
     int num;
 };

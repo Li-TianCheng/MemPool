@@ -2,11 +2,13 @@
 #include "MemPool.h"
 #include "MemPoolAllocator.h"
 #include <ctime>
-#include <unordered_set>
+#include <random>
+#include <vector>
+#include <algorithm>
 
 using namespace std;
 
-MemPool memPool(1000);
+MemPool memPool(10000);
 class A{
 public:
     static void* operator new(size_t size){
@@ -26,7 +28,7 @@ private:
 
 int main() {
     vector<B, MemPoolAllocator<B, 10000>> v;
-    long long n = 100000000;
+    long long n = 10000000;
     clock_t start = clock();
     for (int i = 0; i < n; i++) {
         v.emplace_back();
@@ -52,30 +54,31 @@ int main() {
     cout << (double)(clock()-start) / CLOCKS_PER_SEC << endl;
 
     n = 100000;
-    unordered_set<int> set;
-    for (int i = 0; i < 10*n; i++){
-        set.insert(random()%n);
+    vector<int> index(n);
+    for (int i = 0; i < n; i++){
+            index[i] = i;
     }
+    shuffle(index.begin(), index.end(), std::mt19937(std::random_device()()));
     A* p[n];
     start = clock();
-    for (int i : set){
+    for (int i : index){
         p[i] = new A;
     }
     cout << (double)(clock()-start) / CLOCKS_PER_SEC << " ";
     start = clock();
-    for (int i: set){
+    for (int i = 0; i < n; i++){
         delete p[i];
     }
     cout << (double)(clock()-start) / CLOCKS_PER_SEC << endl;
 
     B* q[n];
     start = clock();
-    for (int i : set){
+    for (int i : index){
         q[i] = new B;
     }
     cout << (double)(clock()-start) / CLOCKS_PER_SEC << " ";
     start = clock();
-    for (int i : set){
+    for (int i = 0; i < n; i++){
         delete q[i];
     }
     cout << (double)(clock()-start) / CLOCKS_PER_SEC << endl;

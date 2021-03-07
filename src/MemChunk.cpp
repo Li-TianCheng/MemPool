@@ -6,38 +6,34 @@
 #include <malloc.h>
 #include <new>
 
-MemChunk::MemChunk(int num, size_t size):num(num), freePointer(nullptr), start(nullptr), next(nullptr){
-    if (num*size == 0){
-        return;
-    }
+MemChunk::MemChunk(int num, size_t size):num(num), free(nullptr), start(nullptr), prev(nullptr), next(nullptr){
     while (true){
-        freePointer = (obj*)malloc(num * size);
-        if (freePointer != nullptr){
+        free = (obj*)malloc(num * size);
+        if (free != nullptr){
             break;
         }else{
             throw std::bad_alloc();
         }
     }
-    start = freePointer;
+    start = free;
     for (int i = 0; i < num-1; i++){
-        freePointer->next = (obj*)((char*)freePointer+size);
-        freePointer = freePointer->next;
+        free->next = (obj*)((char*)free+size);
+        free = free->next;
     }
-    freePointer->next = nullptr;
-    freePointer = start;
+    free->next = nullptr;
+    free = start;
 };
 
 void* MemChunk::allocate() {
-    obj* curr;
-    curr = freePointer;
-    freePointer = freePointer->next;
+    obj* curr = free;
+    free = free->next;
     num--;
     return curr;
 }
 
 void MemChunk::deallocate(void *ptr) {
-    ((obj*)ptr)->next = freePointer;
-    freePointer = (obj*)ptr;
+    ((obj*)ptr)->next = free;
+    free = (obj*)ptr;
     num++;
 }
 

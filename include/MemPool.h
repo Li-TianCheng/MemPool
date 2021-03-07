@@ -6,6 +6,7 @@
 #define MEMPOOL_MEMPOOL_H
 
 #include "ManageChunk.h"
+#include "Mutex.h"
 #include <vector>
 
 using std::vector;
@@ -19,6 +20,7 @@ public:
     void operator=(const MemPool&) = delete;
 private:
     vector<ManageChunk> mem;
+    vector<Mutex> mutex;
 };
 
 

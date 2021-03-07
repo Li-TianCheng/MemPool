@@ -5,58 +5,75 @@
 #include "ManageChunk.h"
 #include <stdexcept>
 
-ManageChunk::ManageChunk(int num, size_t size):num(num), size(size), head(new MemChunk(0, 0)), free(nullptr){}
+ManageChunk::ManageChunk(int num, size_t size):num(num), size(size), head(nullptr), free(nullptr){}
 
 void* ManageChunk::allocate() {
-    if (head->next == nullptr) {
-        head->next = new MemChunk(num, size);
-        return head->next->allocate();
+    if (head == nullptr) {
+        head = new MemChunk(num, size);
+        return head->allocate();
     }
     MemChunk* curr = head;
-    while (curr->next != nullptr){
-        if (curr->next->num != 0){
+    while (curr != nullptr){
+        if (curr->num != 0){
             if (curr == free){
                 free = nullptr;
             }
             if (curr == head){
-                return curr->next->allocate();
+                return head->allocate();
             }
-            MemChunk* alloc = curr->next;
-            curr->next = curr->next->next;
-            alloc->next = head->next;
-            head->next = alloc;
-            return alloc->allocate();
+            curr->prev->next = curr->next;
+            if (curr->next != nullptr){
+                curr->next->prev = curr->prev;
+            }
+            curr->prev = nullptr;
+            curr->next = head;
+            head->prev = curr;
+            head = curr;
+            return head->allocate();
         }
         curr = curr->next;
     }
     MemChunk* alloc = new MemChunk(num, size);
-    alloc->next = head->next;
-    head->next = alloc;
-    return alloc->allocate();
+    alloc->next = head;
+    head->prev = alloc;
+    head = alloc;
+    return head->allocate();
 }
 
 void ManageChunk::deallocate(void* ptr) {
     if (ptr != nullptr){
         MemChunk* curr = head;
-        while (curr->next != nullptr){
-            if (ptr >= (void*)(curr->next->start) && ptr < (void*)((char*)(curr->next->start)+size*num)){
-                curr->next->deallocate(ptr);
-                if (curr->next->num == num){
+        while (curr != nullptr){
+            if (ptr >= (void*)(curr->start) && ptr < (void*)((char*)(curr->start)+size*num)){
+                curr->deallocate(ptr);
+                if (curr->num == num){
                     if (free != nullptr && free != curr){
-                        MemChunk* dealloc = free->next;
-                        free->next = free->next->next;
-                        dealloc->next = nullptr;
-                        delete dealloc;
+                        if (free == head){
+                            head = free->next;
+                            head->prev = nullptr;
+                        }else{
+                            free->prev->next = free->next;
+                            if (free->next != nullptr){
+                                free->next->prev = free->prev;
+                            }
+                        }
+                        delete free;
                     }
+                    free = curr;
                 }
                 if (curr == head){
                     return;
                 }
-                MemChunk* alloc = curr->next;
-                curr->next = curr->next->next;
-                alloc->next = head->next;
-                head->next = alloc;
-                free = head;
+                if (curr->prev != nullptr){
+                    curr->prev->next = curr->next;
+                }
+                if (curr->next != nullptr){
+                    curr->next->prev = curr->prev;
+                }
+                curr->prev = nullptr;
+                curr->next = head;
+                head->prev = curr;
+                head = curr;
                 return;
             }
             curr = curr->next;
@@ -66,7 +83,6 @@ void ManageChunk::deallocate(void* ptr) {
 }
 
 ManageChunk::~ManageChunk() {
-    head = head->next;
     while (head != nullptr){
         MemChunk* temp = head;
         head = head->next;
