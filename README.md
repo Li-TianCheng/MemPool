@@ -9,3 +9,4 @@ c++高性能内存池
 3.内存池可自动对过多内存进行回收
 
 ## 结构图
+![image](https://github.com/Li-TianCheng/MemPool/blob/main/MemPool%E7%BB%93%E6%9E%84.png)
