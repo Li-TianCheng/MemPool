@@ -4,9 +4,9 @@
 
 #include "MemPool.h"
 
-MemPool::MemPool(int num):mutex(126){
+MemPool::MemPool(int num):mutex(126), num(num){
     for (int i = 0; i < 127; i++){
-        mem.emplace_back(num, 8+i*4);
+        mem.emplace_back(8+i*4);
     }
 }
 
@@ -15,7 +15,7 @@ void* MemPool::allocate(size_t size) {
         return ::operator new(size);
     }
     mutex[(size-8)/4].lock();
-    void* ptr = mem[(size-8)/4].allocate();
+    void* ptr = mem[(size-8)/4].allocate(num);
     mutex[(size-8)/4].unlock();
     return ptr;
 }
@@ -25,7 +25,7 @@ void MemPool::deallocate(void *ptr, size_t size) {
         return ::operator delete(ptr);
     }
     mutex[(size-8)/4].lock();
-    mem[(size-8)/4].deallocate(ptr);
+    mem[(size-8)/4].deallocate(ptr, num);
     mutex[(size-8)/4].unlock();
 }
 

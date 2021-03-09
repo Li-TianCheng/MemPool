@@ -5,9 +5,9 @@
 #include "ManageChunk.h"
 #include <stdexcept>
 
-ManageChunk::ManageChunk(int num, size_t size):num(num), size(size), head(nullptr), free(nullptr){}
+ManageChunk::ManageChunk(size_t size):size(size), head(nullptr), free(nullptr){}
 
-void* ManageChunk::allocate() {
+void* ManageChunk::allocate(int num) {
     if (head == nullptr) {
         head = new MemChunk(num, size);
         return head->allocate();
@@ -40,7 +40,7 @@ void* ManageChunk::allocate() {
     return head->allocate();
 }
 
-void ManageChunk::deallocate(void* ptr) {
+void ManageChunk::deallocate(void* ptr, int num) {
     if (ptr != nullptr){
         MemChunk* curr = head;
         while (curr != nullptr){

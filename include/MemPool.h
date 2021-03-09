@@ -21,6 +21,7 @@ public:
 private:
     vector<ManageChunk> mem;
     vector<Mutex> mutex;
+    int num;
 };
 
 

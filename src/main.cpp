@@ -8,7 +8,7 @@
 
 using namespace std;
 
-MemPool memPool(10000);
+MemPool memPool(100000);
 class A{
 public:
     static void* operator new(size_t size){
