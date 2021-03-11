@@ -38,5 +38,5 @@ void MemChunk::deallocate(void *ptr) {
 }
 
 MemChunk::~MemChunk() {
-    delete start;
+    ::free(start);
 }

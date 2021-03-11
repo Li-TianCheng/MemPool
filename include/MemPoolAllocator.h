@@ -10,6 +10,11 @@
 
 using std::allocator;
 
+static MemPool& getMemPool(int num){
+    static MemPool memPool(num);
+    return memPool;
+}
+
 template<typename T, int num>
 class MemPoolAllocator {
 public:
@@ -26,24 +31,18 @@ public:
     struct rebind{
         typedef MemPoolAllocator<U, num> other;
     };
-    MemPoolAllocator() noexcept;
     pointer allocate(size_t n, const_pointer hint = nullptr);
     void deallocate(pointer p, size_t n);
-private:
-    MemPool allocator;
 };
 
 template<typename T, int num> inline
-MemPoolAllocator<T, num>::MemPoolAllocator() noexcept : allocator(num){}
-
-template<typename T, int num> inline
 T* MemPoolAllocator<T, num>::allocate(size_t n, const_pointer) {
-    return (pointer)allocator.allocate(sizeof(T)*n);
+    return (pointer)getMemPool(num).allocate(sizeof(T)*n);
 }
 
 template<typename T, int num> inline
 void MemPoolAllocator<T, num>::deallocate(T* p, size_t n){
-    allocator.deallocate((void*)(p), sizeof(T)*n);
+    getMemPool(num).deallocate((void*)(p), sizeof(T)*n);
 }
 
 
